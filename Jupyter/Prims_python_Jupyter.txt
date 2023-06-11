@@ -1,0 +1,225 @@
+import pandas as pd
+import networkx as nx
+from matplotlib.pyplot import figure
+
+t = [['A', 'B', '2'],
+    ['A', 'D', '1'],
+    ['B','C','8'],
+    ['D','C','6'],
+    ['E','A','4'],
+    ['E','C','7'],
+    ['f','L','6']]
+t2 = [['A', 'B', '2'],
+    ['B', 'C', '1'],
+    ['C','D','8'],
+    ['D','A','6']]
+t3 = [['A', 'B', '2'],
+    ['B', 'C', '1'],
+    ['C','D','8'],
+    ['D','A','6'],
+    ['D','C','4']]
+t5 = [['A','B','4'],
+      ['A','D','3'],
+      ['A','E','5'],
+      ['B','A','4'],
+      ['B','C','2'],
+      ['C','B','2'],
+      ['C','D','1'],
+      ['D','C','1'],
+      ['D','A','3'],
+      ['E','A','5']]
+kruskal = [['Albany', 'Corvallis', '11'],
+["Ashland", "Medford", "12"],
+["Astoria", "Tillamook", "66"],
+["Baker.City", "La.Grande", "44"],
+["Bend", "Redmond", "16"],
+["Coos.Bay", "Florence", "48"],
+["Corvallis", "Salem", "35"],
+["Eugene", "Springfield", "4"],
+["Florence", "Newport", "50"],
+["Forest.Grove", "Portland","23"],
+["Grants.Pass", "Medford", "29"],
+["Gresham", "Portland", "14"],
+["Klamath.Falls", "Ashland", "64"],
+["La.Grande", "Pendleton", "52"],
+["McMinnville", "Newberg", "14"],
+["Medford", "Klamath.Falls", "76"],
+["Newberg", "Woodburn", "19"],
+["Newport","Corvallis", "53"],
+["Ontario", "Baker.City", "72"],
+["Pendleton", "Baker.City", "96"],
+["Portland", "Newberg", '23'],
+["Redmond", "The.Dalles", "114"],
+["Roseburg", "Grants.Pass", "68"],
+["Salem", "Woodburn", '17'],
+["Springfield", "Albany", "43"],
+["The.Dalles", "Gresham", "73"],
+["Tillamook", 'Forest.Grove', "52"],
+["Woodburn", "Portland", "30"]]
+    
+def Connect(g, start, end):
+    weight = 0
+    for i in range(len(g)) :
+        if((g[i][0] == start) & (g[i][1] == end)): # start == V[start] & vertex is not the same
+            weight = int(g[i][2])
+    return weight
+def find_nodes(g):
+    Nodes = {}
+    for i in range(len(g)):
+        if(not(g[i][0] in Nodes)):
+            Nodes[g[i][0]]= 'True'
+        if(not(g[i][1] in Nodes)):
+            Nodes[g[i][1]]= 'True'
+    n = len(Nodes.keys())
+    keys = sorted(list(Nodes.keys()))
+    return (keys, n)
+
+def span_adjacency(span):
+    l = []
+    for s in span:
+        l.append([s[0],s[1],span[s]])
+    Nodes, n = find_nodes(l)
+    A = adjacency_list(l, Nodes, n)
+
+    return (A)
+
+def Span_graph_edgelist2(span):
+    start = []
+    end = []
+    value = []
+    for start_end in (span):
+      start.append(start_end[0])
+      end.append(start_end[1])
+      value.append(start_end[2])
+    df = pd.DataFrame({'source' : start,
+                      'target' : end,
+                      'weight' : value})
+    return df
+
+def Span_graph_edgelist(span):
+    start = []
+    end = []
+    value = []
+    for start_end in (span):
+        start.append(start_end[0])
+        end.append(start_end[1])
+        value.append(span[start_end])
+    df = pd.DataFrame({'source' : start,
+                      'target' : end,
+                      'weight' : value})
+    return df
+
+def adjacency_list(g, l, n):
+    A = [ [ 0 for i in range(n) ] for j in range(n) ]
+    for i in range(n):
+        for j in range(n):
+            if(i != j):
+                A[i][j]= Connect(g, l[i], l[j])
+    return A
+
+def prims(A,n,Node):
+    min = 10**10
+    span = {}
+    disconnected = True
+    for i in range(n):
+        for j in range(n):
+            if((A[i][j] < min) & (A[i][j] != 0) & (not(Node[j],Node[i]) in span)):
+                min = A[i][j]
+                jth_place = j
+                if(A[j][i] != 0 ):
+                    disconnected = False
+            if(((Node[j],Node[i]) in span) & (A[i][j] != 0 )):
+
+                if(span[(Node[j],Node[i])] > A[i][j]):
+                    
+                    del span[(Node[j],Node[i])]
+                    v = A[i][j]
+                    span[(Node[j],Node[i])] = v
+                    if(v > min):
+                        disconnected = False
+                    elif(v < min):
+                        min = v
+                        disconnected = False
+                    disconnected = False
+                if(span[(Node[j],Node[i])] < A[i][j]):
+                    
+                    del span[(Node[j],Node[i])]
+                    v = A[j][i]
+                    if(v > min):
+                        disconnected = False
+                        break
+                    elif(v < min):
+                        min = v
+                        disconnected = False
+                    disconnected = False
+                if(span[(Node[j],Node[i])] == A[i][j]):
+                    del span[(Node[j],Node[i])]
+                    v = A[i][j]
+                    span[(Node[j],Node[i])] = v
+                    if(v > min):
+                        disconnected = False
+                    elif(v < min):
+                        min = v
+                        disconnected = False
+                    disconnected = False
+            elif(A[j][i] != 0 ):
+                disconnected = False
+        if(disconnected == True):
+            print("Unconnected Node")
+            return(0,"Unconnected Node")
+        if(min != 10**10 ):
+            span[(Node[i],Node[jth_place])] = min  
+            min = 10**10
+            disconnected = True
+        else:
+            min = 10**10
+            disconnected = True
+    if(len(span)>= n):
+        max_key = max(span, key=span.get)
+        del span[max_key]
+    return (span)
+
+def which_graph(path_list, index):
+    '''
+    Insert a list of test cases to try and an index of the test case in the index
+    which_graph(path_list, index)
+    '''
+    g = []
+    path = path_list[index] # Change this to change the file read in
+
+    with open(path) as f:
+        lines = f.readlines()
+    for line in lines:
+        g.append(line.split(sep=' '))
+    return g
+path_list=['city-pairs.txt','10.txt','100.txt','1000.txt','unconnected.txt']
+g = which_graph(path_list, 0) # Access by index of list
+
+g = g # Override the which_graph() with simple case
+Nodes, n = find_nodes(g) 
+A = adjacency_list(g, Nodes, n)
+span = prims(A,n,Nodes)
+minimum_spanning_tree = sum(span.values())
+# print("Minimum Value: ",minimum_spanning_tree, '\n', span)
+print(len(span),len(Nodes))
+if(minimum_spanning_tree !=0):
+    SA = span_adjacency(span)
+    df = Span_graph_edgelist(span)
+   
+    G=nx.from_pandas_edgelist(df, 'source', 'target', edge_attr='weight')
+
+    pos=nx.spring_layout(G) # pos = nx.nx_agraph.graphviz_layout(G)
+    
+    fig = figure(1, figsize=(20, 40), dpi=300)
+    nx.draw_networkx(G,pos, node_size=60)
+
+    labels = nx.get_edge_attributes(G,'weight')
+    nx.draw_networkx_edge_labels(G,pos,edge_labels=labels)
+
+    pd.DataFrame(df).to_excel("span_check.xlsx",
+                sheet_name='Span_Adjacency')
+    
+    #1325
+    
+# ('Florence', 'Albany'): 48 , ('Medford', 'Albany'): 12, ('Newberg', 'Forest.Grove'): 14
+# ('Portland', 'Albany'): 14 , ('Redmond', 'Albany'): 16,  ('Springfield', 'Albany'): 4, ('Woodburn', 'Newberg'): 17

@@ -1,0 +1,143 @@
+from timeit import default_timer as timer
+
+import kruskal
+t = [['A', 'B', '2'],
+    ['A', 'D', '1'],
+    ['B','C','8'],
+    ['D','C','6'],
+    ['E','A','4'],
+    ['E','C','7'],
+    ['f','L','6']]
+t2 = [['A', 'B', '2'],
+    ['B', 'C', '1'],
+    ['C','D','8'],
+    ['D','A','6']]
+t3 = [['A', 'B', '2'],
+    ['B', 'C', '1'],
+    ['C','D','8'],
+    ['D','A','6'],
+    ['D','C','4']]
+t5 = [['A','B','4'],
+      ['A','D','3'],
+      ['A','E','5'],
+      ['B','A','4'],
+      ['B','C','2'],
+      ['C','B','2'],
+      ['C','D','1'],
+      ['D','C','1'],
+      ['D','A','3'],
+      ['E','A','5']]
+    
+def Connect(g, start, end):
+    weight = 0
+    for i in range(len(g)) :
+        if((g[i][0] == start) & (g[i][1] == end)): # start == V[start] & vertex is not the same
+            weight = int(g[i][2])
+    return weight
+def find_nodes(g):
+    Nodes = {}
+    for i in range(len(g)):
+        if(not(g[i][0] in Nodes)):
+            Nodes[g[i][0]]= 'True'
+        if(not(g[i][1] in Nodes)):
+            Nodes[g[i][1]]= 'True'
+    n = len(Nodes.keys())
+    keys = sorted(list(Nodes.keys()))
+    return (keys, n)
+
+def adjacency_list(g, l, n):
+    A = [ [ 0 for i in range(n) ] for j in range(n) ]
+    for i in range(n):
+        for j in range(n):
+            if(i != j):
+                A[i][j]= Connect(g, l[i], l[j])
+    return A
+  
+def prims(A,n,Node):
+    min = 10**10
+    span = {}
+    disconnected = True
+    for i in range(n):
+        for j in range(n):
+            if((A[i][j] < min) & (A[i][j] != 0) & (not(Node[j],Node[i]) in span)):
+                min = A[i][j]
+                jth_place = j
+                if(A[j][i] != 0 ):
+                    disconnected = False
+            if(((Node[j],Node[i]) in span) & (A[i][j] != 0 )):
+                if(span[(Node[j],Node[i])] > A[i][j]):
+                    
+                    del span[(Node[j],Node[i])]
+                    v = A[i][j]
+                    span[(Node[j],Node[i])] = v
+                    if(v > min):
+                        disconnected = False
+                    elif(v < min):
+                        min = v
+                        disconnected = False
+                    disconnected = False
+                if(span[(Node[j],Node[i])] < A[i][j]):
+                    
+                    del span[(Node[j],Node[i])]
+                    v = A[j][i]
+                    if(v > min):
+                        disconnected = False
+                        break
+                    elif(v < min):
+                        min = v
+                        disconnected = False
+                    disconnected = False
+                if(span[(Node[j],Node[i])] == A[i][j]):
+                    del span[(Node[j],Node[i])]
+                    v = A[i][j]
+                    span[(Node[j],Node[i])] = v
+                    if(v > min):
+                        disconnected = False
+                    elif(v < min):
+                        min = v
+                        disconnected = False
+                    disconnected = False
+            elif(A[j][i] != 0 ):
+                disconnected = False
+        if(disconnected == True):
+            print("Unconnected Node")
+            return(0,"Unconnected Node")
+        if(min != 10**10 ):
+            span[(Node[i],Node[jth_place])] = min  
+            min = 10**10
+            disconnected = True
+        else:
+            min = 10**10
+            disconnected = True
+    if(len(span)>= n):
+        max_key = max(span, key=span.get)
+        del span[max_key]
+    return (span)
+        
+def open_file(path):
+  with open(path) as f:
+      lines = f.readlines()
+  g = []
+  for line in lines:
+      g.append(line.split(sep=' '))
+  return g
+
+def call_prim(x, y):
+  start = timer()
+  
+  path = x
+  print(path)
+  g = open_file(path)
+
+  Nodes, n = find_nodes(g) 
+  A = adjacency_list(g, Nodes, n)
+  span = prims(A,n,Nodes)
+  end = timer()
+  result = (end - start) * 1000
+  print("Time to complete Prims's Algorithm: " + str(result),'milliseconds.')
+  if(int(y) != 0):
+    for sp in span:
+      print(sp[0],sp[1],span[sp])
+  minimum_spanning_tree = sum(span.values())
+  print('MST size: '+ str(minimum_spanning_tree))
+

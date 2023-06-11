@@ -1,0 +1,61 @@
+def kruskal(sortedList):
+
+    mst = []
+    start = []
+    end = []
+
+    for x in sortedList:
+      if (len(mst) == 0):
+          mst.append(x)
+          start.append(x[0])
+          end.append(x[1])
+      elif (isNotCycle(x, mst, start, end)):
+          mst.append(x)
+          if (x[0] not in start):
+               start.append(x[0])
+          if (x[1] not in end):
+              end.append(x[1])
+
+        # print("start: " + str(start))
+        # print("end: "+ str(end))
+    # print(start)
+    # print(end)
+
+
+    return mst
+
+
+
+def isNotCycle(x, mst, start, end):
+  s = x[0]
+  e = x[1]
+  v = x[2]
+
+
+  if(s not in start and e in end):
+    for y in mst:
+      if(y[1] == e):
+        if(y[2] > v):
+          mst.pop(y)
+          return 1
+
+  if(s in start and e not in end):
+    for y in mst:
+      if(y[0] == s):
+        if(y[2] > v):
+          mst.pop(y)
+          return 1
+
+  if(s not in start and e not in end):
+    return 1
+
+  if(e not in start and s not in end):
+    return 1 
+
+  if(s in start and e in start and s not in end):
+    return 1
+
+  return 0
+
+  #  if(s in start and e not in end):
+  #   return 1

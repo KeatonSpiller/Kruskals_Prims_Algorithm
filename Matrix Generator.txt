@@ -1,0 +1,24 @@
+import random
+import string
+file1 = open("5.txt","w")
+dict = {}
+n = 5
+c  = 5
+l, A = [],[]
+for i in range(1, n+1):
+    letters = string.ascii_lowercase
+    l.append(''.join(random.choice(letters) for i in range(c)))
+r = sorted(l[::-1])
+l =sorted(l)
+for x in range(1, n+1):
+    for y in range(1, n+1):
+        if x == y:
+            continue
+        else:
+            weight = random.randint(50, 1000)
+            edge = str(l[x-1])+ " " + str(r[y-1])
+            file1.write(edge + " " + str(weight)+'\n')
+            print(x,y)
+            
+            
+# 10, 100, 1000 & check with a graph that has a distinct node
